@@ -1,0 +1,10 @@
+serviceLaravel/vendor
+serviceLaravel/.idea
+serviceLaravel/Homestead.json
+serviceLaravel/Homestead.yaml
+serviceLaravel/.env
+serviceLaravel/.phpunit.result.cache
+serviceLaravel/storage/logs/
+
+.env
+node_modules/
