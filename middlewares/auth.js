@@ -1,19 +1,58 @@
 import jwt from "jsonwebtoken";
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token)
-    return res
-      .status(401)
-      .json({ success: false, message: "token not provided" });
+
+export const jwtMiddleware = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      message: "Token tidak ditemukan. Sertakan Authorization: Bearer <token>.",
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
 
   try {
-    const decode = jwt.verify(token, process.env.SECRET_KEY);
-    req.headers["X-User-Id"] = decoded.id;
-    req.headers["X-User-Role"] = decoded.role;
-    req.headers["X-User-Email"] = decoded.email;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = decoded;
+
+    req.headers["x-user-id"] = String(decoded.id);
+    req.headers["x-user-role"] = decoded.role;
+    req.headers["x-user-email"] = decoded.email;
+
     next();
   } catch (err) {
-    return res.status(500).json({ message: err.message });
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message:
+          "Token sudah expired. Gunakan refresh token untuk mendapatkan token baru.",
+        code: "TOKEN_EXPIRED",
+      });
+    }
+    return res.status(401).json({
+      success: false,
+      message: "Token tidak valid.",
+    });
   }
 };
-export default authMiddleware;
+
+/**
+ * Cek role user.
+ * Pakai setelah jwtMiddleware.
+ *
+ * Contoh:
+ * router.post('/courses', jwtMiddleware, requireRole('instructor', 'admin'), handler)
+ */
+export const requireRole =
+  (...roles) =>
+  (req, res, next) => {
+    if (!roles.includes(req.user?.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Akses ditolak. Hanya untuk role: ${roles.join(", ")}.`,
+      });
+    }
+    next();
+  };
