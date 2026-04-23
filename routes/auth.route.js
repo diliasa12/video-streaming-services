@@ -4,7 +4,10 @@ import {
   login,
   refresh,
   logout,
+  me,
+  logoutAll,
 } from "../controllers/authController.js";
+import { jwtMiddleware } from "../middlewares/auth.js";
 // Public
 const router = Router();
 router.post("/register", register);

@@ -16,7 +16,7 @@ class InternalController extends Controller
   public function syncUser(Request $request): JsonResponse
   {
     // Validasi internal secret
-    if ($request->header('X-Internal-Secret') !== env('INTERNAL_SECRET')) {
+    if ($request->header('X-Internal-Secret') !== config('app.internal_secret')) {
       return response()->json(['message' => 'Forbidden'], 403);
     }
 

@@ -60,6 +60,10 @@ class CourseController extends Controller
   // ─────────────────────────────────────────────
   public function store(Request $request): JsonResponse
   {
+    if (!in_array($request->header('X-User-Role'), ['instructor', 'admin'])) {
+      return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+    }
+
     $this->validate($request, [
       'title'         => 'required|string|max:255',
       'description'   => 'nullable|string',
@@ -307,7 +311,7 @@ class CourseController extends Controller
         'course_progress'   => [
           'completed_lessons' => $completedLessons,
           'total_lessons'     => $totalLessons,
-          'percentage'        => round($completedLessons / $totalLessons * 100, 1),
+          'percentage'        => $totalLessons > 0 ? round($completedLessons / $totalLessons * 100, 1) : 0,
           'is_finished'       => $completedLessons === $totalLessons,
         ],
       ],

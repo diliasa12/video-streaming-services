@@ -1,5 +1,5 @@
-const db = require("../config/db");
-const bcrypt = require("bcryptjs");
+import db from "../config/db.js";
+import bcrypt from "bcryptjs";
 
 export const User = {
   // ─────────────────────────────────────────────
